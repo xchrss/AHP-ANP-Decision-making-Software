@@ -73,8 +73,8 @@ random_index_values = {
 
 # Example of constructing a pairwise comparison matrix
 # Let's assume the user inputs the number of criteria and alternatives
-num_criteria = 3
-num_alternatives = 2
+num_criteria = int(input("Enter the number of criteria: "))
+num_alternatives = int(input("Enter the number of alternatives: "))
 
 # Get the pairwise comparison matrix for the criteria from the user
 criteria_matrix = get_user_input_matrix(num_criteria, "criteria")
