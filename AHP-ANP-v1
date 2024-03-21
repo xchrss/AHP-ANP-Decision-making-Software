@@ -1,0 +1,113 @@
+import numpy as np
+
+# Function to calculate the priority vector from the pairwise comparison matrix
+def calculate_priority_vector(matrix):
+    # Normalizing the matrix
+    column_sums = np.sum(matrix, axis=0)
+    normalized_matrix = matrix / column_sums
+    
+    # Calculating the priority vector by averaging across the rows
+    priority_vector = np.mean(normalized_matrix, axis=1)
+    return priority_vector
+
+# Function to check for consistency in the pairwise comparison matrix
+def consistency_ratio(matrix, random_index_values):
+    n = matrix.shape[0]
+    if n <= 2:
+        return 0  # Return 0 for consistency ratio if matrix size is 1 or 2
+    column_sums = np.sum(matrix, axis=0)
+    normalized_matrix = matrix / column_sums
+    priority_vector = np.mean(normalized_matrix, axis=1)
+    
+    # Reconstructing the weighted sum matrix
+    weighted_sum_matrix = matrix * priority_vector[:, np.newaxis]
+    
+    # Calculating the consistency vector
+    consistency_vector = np.sum(weighted_sum_matrix, axis=0) / priority_vector
+    
+    # Calculating the lambda max
+    lambda_max = np.mean(consistency_vector)
+    
+    # Calculating the consistency index (CI)
+    ci = (lambda_max - n) / (n - 1)
+    
+    # Obtaining the Random Consistency Index (RI)
+    ri = random_index_values.get(n,0)
+    
+    # Calculating the consistency ratio (CR)
+    cr = ci / ri
+    return cr
+def get_user_input_matrix(size, matrix_type="criteria"):
+    """
+    Prompts user to input the pairwise comparison matrix for either criteria or alternatives.
+
+    Parameters:
+    - size (int): The size of the matrix (number of criteria or alternatives).
+    - matrix_type (str): The type of matrix ("criteria" or "alternatives").
+
+    Returns:
+    - np.array: The input pairwise comparison matrix as a NumPy array.
+    """
+    matrix = np.zeros((size, size))
+
+    print(f"Enter the pairwise comparison matrix for {matrix_type}:")
+    for i in range(size):
+        for j in range(i + 1, size):
+            while True:
+                try:
+                    value = float(input(f"Enter the value for {matrix_type} {i + 1} compared to {matrix_type} {j + 1}: "))
+                    matrix[i, j] = value
+                    matrix[j, i] = 1 / value
+                    break
+                except ValueError:
+                    print("Invalid input! Please enter a number.")
+
+    # Fill the diagonal with 1s for the pairwise comparison matrix
+    np.fill_diagonal(matrix, 1)
+    return matrix
+
+# Random Index (RI) values for different matrix sizes
+random_index_values = {
+    1: 0, 2: 0, 3: 0.58, 4: 0.90, 5: 1.12, 6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49
+}
+
+# Example of constructing a pairwise comparison matrix
+# Let's assume the user inputs the number of criteria and alternatives
+num_criteria = 3
+num_alternatives = 2
+
+# Get the pairwise comparison matrix for the criteria from the user
+criteria_matrix = get_user_input_matrix(num_criteria, "criteria")
+
+# Get the pairwise comparison matrices for the alternatives for each criterion
+alternative_matrices = []
+for i in range(num_criteria):
+    print(f"\nCriterion C{i+1}")
+    alternative_matrix = get_user_input_matrix(num_alternatives, f"alternatives for criterion C{i+1}")
+    alternative_matrices.append(alternative_matrix)
+
+(criteria_matrix, alternative_matrices)  # Output the matrices to check them
+
+# Calculating priority vectors for each matrix
+criteria_priority_vector = calculate_priority_vector(criteria_matrix)
+alternative_priority_vectors = [calculate_priority_vector(matrix) for matrix in alternative_matrices]
+
+# Aggregating the priority vectors
+aggregated_priorities = np.array(alternative_priority_vectors).T.dot(criteria_priority_vector)
+
+# Calculating consistency ratios
+criteria_cr = consistency_ratio(criteria_matrix, random_index_values)
+alternative_crs = [consistency_ratio(matrix, random_index_values) for matrix in alternative_matrices]
+
+# Checking if the matrices are consistent
+if criteria_cr < 0.1 and all(cr < 0.1 for cr in alternative_crs):
+    consistency = 'Consistent'
+else:
+    consistency = 'Inconsistent'
+
+print('Criteria Priority Vector:', criteria_priority_vector)
+print('Alternative Priority Vectors:' ,alternative_priority_vectors) 
+print('Aggregated priorities:',aggregated_priorities)
+print("Consistency Ratios: Criteria CR:", criteria_cr)
+print("Alternative CRs:", alternative_crs)
+print('Consistency:' ,consistency)
