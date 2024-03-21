@@ -4,7 +4,9 @@ This project started after being challenged by my professor to translate our dec
 This piece of software implements Multi-Criteria Decision Making (MCDM) methods, specifically the Analytic Hierarchy Process (AHP) and the Analytic Network Process (ANP) to provide sophisticated platforms for evaluating various options against a set of criteria. This kind of tool is valuable in helping decision-makers assess complex scenarios where multiple, often conflicting, criteria need to be considered.
 
 Brief How-To-Guide:
-
+1.Input the number of Options and Criteria you have under consideration.
+2.Input the relations and weights
+3.Interpret results
 
 How it Works:
 #Input:
